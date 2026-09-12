@@ -1,60 +1,166 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SmartCalc India</title>
-<link rel="stylesheet" href="style.css">
-</head><body>
-<header><div class="nav"><b>SmartCalc <span>India</span></b><nav><a href="#tax">Tax</a><a href="#salary">Salary</a><a href="#tools">Tools</a></nav></div></header>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="SmartCalc India — simple calculators for Indian tax, salary, EMI, SIP, car lease and gold value.">
+  <title>SmartCalc India — Calculate. Compare. Understand.</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="nav">
+    <a class="brand" href="#">
+      <span class="brand-mark">₹</span>
+      <span><strong>SmartCalc</strong> <em>India</em></span>
+    </a>
+    <nav>
+      <a href="#tax">Tax</a>
+      <a href="#salary">Salary</a>
+      <a href="#tools">Tools</a>
+    </nav>
+  </div>
+</header>
+
 <main>
-<section class="hero"><small>INDIA • FINANCE CALCULATORS</small><h1>Calculate. Compare. Understand.</h1><p>Simple calculators for salary, tax, loans and investments.</p></section>
-<div class="tabs">
-<button class="active" data-tab="tax">Tax</button><button data-tab="salary">Salary</button><button data-tab="emi">EMI</button><button data-tab="sip">SIP</button><button data-tab="car">Car Lease</button><button data-tab="gold">Gold</button>
-</div>
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">🇮🇳 MADE FOR INDIA • FINANCE TOOLS</span>
+      <h1>Make smarter money decisions.</h1>
+      <p>Calculate your tax, take-home salary, EMI, SIP returns, car lease cost and gold value — in seconds.</p>
+      <div class="hero-actions">
+        <a class="primary-link" href="#tax">Start calculating <span>→</span></a>
+        <a class="secondary-link" href="#tools">Explore tools</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="mini-label">POPULAR RIGHT NOW</div>
+      <div class="hero-number">₹1,75,240</div>
+      <div class="hero-caption">Example annual tax difference</div>
+      <div class="hero-pills"><span>Old vs New</span><span>Instant comparison</span></div>
+    </div>
+  </section>
 
-<section id="tax" class="app active">
-<div class="card"><h2>Old vs New Tax Regime</h2>
-<div class="fields">
-<label>Salary income <input id="t_salary" type="number" value="2000000"></label>
-<label>Other normal income <input id="t_other" type="number" value="0"></label>
-<label>Age <select id="t_age"><option value="0">Below 60</option><option value="60">60–79</option><option value="80">80+</option></select></label>
-<label>HRA received <input id="t_hra" type="number" value="0"></label>
-<label>Rent paid/year <input id="t_rent" type="number" value="0"></label>
-<label>Basic salary/year <input id="t_basic" type="number" value="1000000"></label>
-<label>80C <input id="t_80c" type="number" value="150000"></label>
-<label>80D <input id="t_80d" type="number" value="0"></label>
-<label>NPS 80CCD(1B) <input id="t_nps" type="number" value="0"></label>
-<label>Home-loan interest <input id="t_home" type="number" value="0"></label>
-<label class="wide">Other old-regime deductions <input id="t_otherded" type="number" value="0"></label>
-</div><button id="taxBtn">Calculate Tax</button>
-<div id="taxResult" class="result"></div>
-<p class="note">Prototype tax engine for ordinary slab-rate income. Verify current rules and special-rate income before financial decisions.</p>
-</div></section>
+  <section id="tools" class="tool-strip" aria-label="Calculator categories">
+    <button class="active" data-tab="tax">Tax</button>
+    <button data-tab="salary">Salary</button>
+    <button data-tab="emi">EMI</button>
+    <button data-tab="sip">SIP</button>
+    <button data-tab="car">Car Lease</button>
+    <button data-tab="gold">Gold</button>
+  </section>
 
-<section id="salary" class="app"><div class="card"><h2>Salary / Take-home</h2>
-<div class="fields">
-<label>Annual CTC <input id="s_ctc" type="number" value="2500000"></label>
-<label>Employer contributions included in CTC <input id="s_emp" type="number" value="0"></label>
-<label>Employee PF / deductions <input id="s_ded" type="number" value="120000"></label>
-<label>Annual income tax <input id="s_tax" type="number" value="0"></label>
-</div><div class="result"><span>Estimated annual take-home</span><strong id="salaryResult"></strong><small>Monthly: <b id="salaryMonthly"></b></small></div></div></section>
+  <section class="trust-row">
+    <div><b>Simple inputs</b><span>No complicated forms</span></div>
+    <div><b>Fast results</b><span>Built for mobile</span></div>
+    <div><b>India focused</b><span>₹ and Indian formats</span></div>
+  </section>
 
-<section id="emi" class="app"><div class="card"><h2>EMI Calculator</h2>
-<div class="fields"><label>Loan amount <input id="e_p" type="number" value="5000000"></label><label>Interest % <input id="e_r" type="number" step=".1" value="8.5"></label><label>Tenure years <input id="e_n" type="number" value="20"></label></div>
-<div class="result"><span>Monthly EMI</span><strong id="emiResult"></strong><small>Total interest: <b id="emiInterest"></b></small></div></div></section>
+  <section id="tax" class="app active">
+    <div class="section-heading">
+      <div><span class="section-kicker">TAX CALCULATOR</span><h2>Old vs New Tax Regime</h2></div>
+      <span class="badge">Popular</span>
+    </div>
+    <div class="card">
+      <div class="fields">
+        <label>Salary income <input id="t_salary" type="number" value="2000000" inputmode="numeric"></label>
+        <label>Other normal income <input id="t_other" type="number" value="0" inputmode="numeric"></label>
+        <label>Age <select id="t_age"><option value="0">Below 60</option><option value="60">60–79</option><option value="80">80+</option></select></label>
+        <label>HRA received <input id="t_hra" type="number" value="0" inputmode="numeric"></label>
+        <label>Rent paid/year <input id="t_rent" type="number" value="0" inputmode="numeric"></label>
+        <label>Basic salary/year <input id="t_basic" type="number" value="1000000" inputmode="numeric"></label>
+        <label>80C <input id="t_80c" type="number" value="150000" inputmode="numeric"></label>
+        <label>80D <input id="t_80d" type="number" value="0" inputmode="numeric"></label>
+        <label>NPS 80CCD(1B) <input id="t_nps" type="number" value="0" inputmode="numeric"></label>
+        <label>Home-loan interest <input id="t_home" type="number" value="0" inputmode="numeric"></label>
+        <label class="wide">Other old-regime deductions <input id="t_otherded" type="number" value="0" inputmode="numeric"></label>
+      </div>
+      <button class="calc-button" id="taxBtn">Calculate tax <span>→</span></button>
+      <div id="taxResult" class="result"></div>
+      <p class="note">Educational estimate for ordinary slab-rate income. Special-rate income, surcharge, exemptions and employer-specific benefits may require additional calculation.</p>
+    </div>
+  </section>
 
-<section id="sip" class="app"><div class="card"><h2>SIP Calculator</h2>
-<div class="fields"><label>Monthly SIP <input id="p_p" type="number" value="10000"></label><label>Expected annual return % <input id="p_r" type="number" step=".1" value="12"></label><label>Years <input id="p_n" type="number" value="20"></label></div>
-<div class="result"><span>Projected value</span><strong id="sipResult"></strong><small>Total invested: <b id="sipInvested"></b></small></div></div></section>
+  <section id="salary" class="app">
+    <div class="section-heading"><div><span class="section-kicker">SALARY</span><h2>Take-home Salary</h2></div></div>
+    <div class="card">
+      <div class="fields">
+        <label>Annual CTC <input id="s_ctc" type="number" value="2500000" inputmode="numeric"></label>
+        <label>Employer contributions included in CTC <input id="s_emp" type="number" value="0" inputmode="numeric"></label>
+        <label>Employee PF / deductions <input id="s_ded" type="number" value="120000" inputmode="numeric"></label>
+        <label>Annual income tax <input id="s_tax" type="number" value="0" inputmode="numeric"></label>
+      </div>
+      <div class="result"><span>Estimated annual take-home</span><strong id="salaryResult"></strong><small>Monthly: <b id="salaryMonthly"></b></small></div>
+    </div>
+  </section>
 
-<section id="car" class="app"><div class="card"><h2>Car Lease Cost</h2>
-<div class="fields"><label>Monthly lease <input id="c_lease" type="number" value="25000"></label><label>Monthly fuel + maintenance <input id="c_run" type="number" value="12000"></label><label>Estimated annual tax saving <input id="c_save" type="number" value="60000"></label></div>
-<div class="result"><span>Effective annual cost</span><strong id="carResult"></strong></div><p class="note">Actual company-car tax treatment depends on employer policy and applicable perquisite rules.</p></div></section>
+  <section id="emi" class="app">
+    <div class="section-heading"><div><span class="section-kicker">LOANS</span><h2>EMI Calculator</h2></div></div>
+    <div class="card">
+      <div class="fields">
+        <label>Loan amount <input id="e_p" type="number" value="5000000" inputmode="numeric"></label>
+        <label>Interest % <input id="e_r" type="number" step=".1" value="8.5" inputmode="decimal"></label>
+        <label>Tenure years <input id="e_n" type="number" value="20" inputmode="numeric"></label>
+      </div>
+      <div class="result"><span>Monthly EMI</span><strong id="emiResult"></strong><small>Total interest: <b id="emiInterest"></b></small></div>
+    </div>
+  </section>
 
-<section id="gold" class="app"><div class="card"><h2>Gold Value Calculator</h2>
-<div class="fields"><label>Weight (grams) <input id="g_w" type="number" value="10"></label><label>Purchase price/gram <input id="g_buy" type="number" value="7000"></label><label>Current price/gram <input id="g_now" type="number" value="7500"></label><label>Making charges <input id="g_make" type="number" value="10000"></label></div>
-<div class="result"><span>Estimated gain before selling costs/taxes</span><strong id="goldResult"></strong></div></div></section>
+  <section id="sip" class="app">
+    <div class="section-heading"><div><span class="section-kicker">INVESTMENTS</span><h2>SIP Calculator</h2></div></div>
+    <div class="card">
+      <div class="fields">
+        <label>Monthly SIP <input id="p_p" type="number" value="10000" inputmode="numeric"></label>
+        <label>Expected annual return % <input id="p_r" type="number" step=".1" value="12" inputmode="decimal"></label>
+        <label>Years <input id="p_n" type="number" value="20" inputmode="numeric"></label>
+      </div>
+      <div class="result"><span>Projected value</span><strong id="sipResult"></strong><small>Total invested: <b id="sipInvested"></b></small></div>
+    </div>
+  </section>
 
-<section class="ai card"><h2>🤖 Ask SmartCalc AI</h2><p>Describe what you want to calculate.</p><div class="ask"><input id="aiInput" placeholder="e.g. I earn ₹20 lakh and want to compare tax regimes"><button id="aiBtn">Analyse</button></div><div id="aiResult"></div></section>
-</main><footer>SmartCalc India • Educational estimates, not financial or tax advice.</footer>
+  <section id="car" class="app">
+    <div class="section-heading"><div><span class="section-kicker">CAR</span><h2>Car Lease Cost</h2></div></div>
+    <div class="card">
+      <div class="fields">
+        <label>Monthly lease <input id="c_lease" type="number" value="25000" inputmode="numeric"></label>
+        <label>Monthly fuel + maintenance <input id="c_run" type="number" value="12000" inputmode="numeric"></label>
+        <label>Estimated annual tax saving <input id="c_save" type="number" value="60000" inputmode="numeric"></label>
+      </div>
+      <div class="result"><span>Effective annual cost</span><strong id="carResult"></strong></div>
+      <p class="note">Actual company-car tax treatment depends on employer policy and applicable perquisite rules.</p>
+    </div>
+  </section>
+
+  <section id="gold" class="app">
+    <div class="section-heading"><div><span class="section-kicker">GOLD</span><h2>Gold Value Calculator</h2></div></div>
+    <div class="card">
+      <div class="fields">
+        <label>Weight (grams) <input id="g_w" type="number" value="10" inputmode="decimal"></label>
+        <label>Purchase price/gram <input id="g_buy" type="number" value="7000" inputmode="numeric"></label>
+        <label>Current price/gram <input id="g_now" type="number" value="7500" inputmode="numeric"></label>
+        <label>Making charges <input id="g_make" type="number" value="10000" inputmode="numeric"></label>
+      </div>
+      <div class="result"><span>Estimated gain before selling costs/taxes</span><strong id="goldResult"></strong></div>
+    </div>
+  </section>
+
+  <section class="ai card">
+    <div class="ai-heading"><span class="ai-icon">✦</span><div><span class="section-kicker">COMING NEXT</span><h2>Ask SmartCalc AI</h2></div></div>
+    <p>Describe your situation in plain English and SmartCalc will guide you to the right calculation.</p>
+    <div class="ask"><input id="aiInput" placeholder="e.g. My CTC is ₹20 lakh. Which tax regime may suit me?"><button id="aiBtn">Analyse</button></div>
+    <div id="aiResult"></div>
+  </section>
+
+  <section class="disclaimer">
+    <b>Important:</b> SmartCalc India provides educational estimates and is not a substitute for professional tax, investment or financial advice.
+  </section>
+</main>
+
+<footer>
+  <div><strong>SmartCalc India</strong><span>Calculate. Compare. Understand.</span></div>
+  <small>© 2026 SmartCalc India</small>
+</footer>
 <script src="app.js"></script>
-</body></html>
+</body>
+</html>
