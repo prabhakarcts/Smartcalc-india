@@ -1,190 +1,615 @@
-const $=id=>document.getElementById(id);
-const n=id=>Math.max(0,Number($(id).value)||0);
-const money=x=>new Intl.NumberFormat("en-IN",{
-  style:"currency",
-  currency:"INR",
-  maximumFractionDigits:0
-}).format(Math.max(0,x||0));
+const $ = id => document.getElementById(id);
 
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tabs button")
-    .forEach(x=>x.classList.remove("active"));
+const n = id => Math.max(0, Number($(id)?.value) || 0);
 
-  document.querySelectorAll(".app")
-    .forEach(x=>x.classList.remove("active"));
+const money = x => new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0
+}).format(Math.max(0, x || 0));
 
-  b.classList.add("active");
-  $(b.dataset.tab).classList.add("active");
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+
+document.querySelectorAll(".tool-strip button").forEach(button => {
+  button.addEventListener("click", () => {
+
+    document.querySelectorAll(".tool-strip button")
+      .forEach(x => x.classList.remove("active"));
+
+    document.querySelectorAll(".app")
+      .forEach(x => x.classList.remove("active"));
+
+    button.classList.add("active");
+
+    const target = $(button.dataset.tab);
+
+    if (target) {
+      target.classList.add("active");
+    }
+  });
 });
 
-function oldTax(x,age){
-  const ex=age>=80?500000:age>=60?300000:250000;
 
-  return Math.max(
-    0,
-    Math.min(Math.max(0,x-ex),250000)*.05+
-    Math.max(0,Math.min(x,1000000)-500000)*.20+
-    Math.max(0,x-1000000)*.30
-  );
-}
+/* =========================================================
+   OLD TAX REGIME — AY 2026-27
+   ========================================================= */
 
-function newTax(x){
-  let t=0,prev=0;
+function oldTax(income, age) {
 
-  for(const [lim,r] of [
-    [400000,0],
-    [800000,.05],
-    [1200000,.10],
-    [1600000,.15],
-    [2000000,.20],
-    [2400000,.25]
-  ]){
-    t+=Math.max(0,Math.min(x,lim)-prev)*r;
-    prev=lim;
+  let tax = 0;
 
-    if(x<=lim)return t;
+  if (age >= 80) {
+
+    tax += Math.max(0, Math.min(income, 1000000) - 500000) * 0.20;
+    tax += Math.max(0, income - 1000000) * 0.30;
+
+  } else if (age >= 60) {
+
+    tax += Math.max(0, Math.min(income, 500000) - 300000) * 0.05;
+    tax += Math.max(0, Math.min(income, 1000000) - 500000) * 0.20;
+    tax += Math.max(0, income - 1000000) * 0.30;
+
+  } else {
+
+    tax += Math.max(0, Math.min(income, 500000) - 250000) * 0.05;
+    tax += Math.max(0, Math.min(income, 1000000) - 500000) * 0.20;
+    tax += Math.max(0, income - 1000000) * 0.30;
   }
 
-  return t+Math.max(0,x-2400000)*.30;
+  return Math.max(0, tax);
 }
 
-function calcTax(){
-  const gross=n("t_salary")+n("t_other");
-  const age=Number($("t_age").value);
 
-  const hra=Math.min(
+/* =========================================================
+   NEW TAX REGIME — AY 2026-27
+   ========================================================= */
+
+function newTax(income) {
+
+  let tax = 0;
+  let previous = 0;
+
+  const slabs = [
+    [400000, 0],
+    [800000, 0.05],
+    [1200000, 0.10],
+    [1600000, 0.15],
+    [2000000, 0.20],
+    [2400000, 0.25],
+    [Infinity, 0.30]
+  ];
+
+  for (const [limit, rate] of slabs) {
+
+    const taxableInSlab =
+      Math.max(0, Math.min(income, limit) - previous);
+
+    tax += taxableInSlab * rate;
+
+    previous = limit;
+
+    if (income <= limit) break;
+  }
+
+  return Math.max(0, tax);
+}
+
+
+/* =========================================================
+   SECTION 87A REBATE + MARGINAL RELIEF
+   ========================================================= */
+
+function oldRegimeRebate(income, tax) {
+
+  // Section 87A: maximum ₹12,500 where taxable income
+  // does not exceed ₹5 lakh.
+  if (income <= 500000) {
+    return Math.min(12500, tax);
+  }
+
+  return 0;
+}
+
+
+function newRegimeRebate(income, tax) {
+
+  // Full rebate up to ₹12 lakh taxable income.
+  if (income <= 1200000) {
+    return Math.min(60000, tax);
+  }
+
+  // Marginal relief above ₹12 lakh.
+  const excessIncome = income - 1200000;
+  const excessTax = tax - excessIncome;
+
+  if (excessTax > 0) {
+    return Math.min(60000, excessTax);
+  }
+
+  return 0;
+}
+
+
+/* =========================================================
+   HEALTH & EDUCATION CESS
+   ========================================================= */
+
+function addCess(tax) {
+  return tax * 1.04;
+}
+
+
+/* =========================================================
+   TAX CALCULATOR
+   ========================================================= */
+
+function calcTax() {
+
+  const salary = n("t_salary");
+  const otherIncome = n("t_other");
+  const age = Number($("t_age").value);
+
+  const grossIncome = salary + otherIncome;
+
+
+  /* -------------------------
+     OLD REGIME
+     ------------------------- */
+
+  // HRA exemption:
+  // Minimum of:
+  // 1. Actual HRA received
+  // 2. Rent paid minus 10% of basic
+  // 3. 50% of basic for specified cities
+  const hraExemption = Math.min(
     n("t_hra"),
-    Math.max(0,n("t_rent")-.1*n("t_basic")),
-    .5*n("t_basic")
+    Math.max(0, n("t_rent") - (0.10 * n("t_basic"))),
+    0.50 * n("t_basic")
   );
 
-  const od=
-    Math.min(150000,n("t_80c"))+
-    n("t_80d")+
-    n("t_nps")+
-    Math.min(200000,n("t_home"))+
-    n("t_otherded")+
-    hra+
-    Math.min(50000,n("t_salary"));
 
-  const ot=Math.max(0,gross-od);
-  const nt=Math.max(
-    0,
-    gross-Math.min(75000,n("t_salary"))
-  );
+  // Standard deduction — old regime
+  const standardDeductionOld =
+    Math.min(50000, salary);
 
-  let a=oldTax(ot,age);
-  let b=newTax(nt);
 
-  if(ot<=500000)
-    a=Math.max(0,a-12500);
+  // 80C maximum ₹1.5 lakh
+  const deduction80C =
+    Math.min(150000, n("t_80c"));
 
-  if(nt<=1200000)
-    b=Math.max(0,b-60000);
 
-  a*=1.04;
-  b*=1.04;
+  // NPS 80CCD(1B) maximum ₹50,000
+  const npsDeduction =
+    Math.min(50000, n("t_nps"));
 
-  const best=a<b?"Old Regime":"New Regime";
 
-  $("taxResult").innerHTML=
-    `<div><b>Old Regime:</b> taxable ${money(ot)}, tax+cess ${money(a)}</div>
-     <div><b>New Regime:</b> taxable ${money(nt)}, tax+cess ${money(b)}</div>
-     <hr>
-     <b>${best}</b> is lower by ${money(Math.abs(a-b))}
-     per year in this scenario.`;
+  // Home loan interest — capped at ₹2 lakh
+  const homeLoanDeduction =
+    Math.min(200000, n("t_home"));
+
+
+  const oldDeductions =
+    standardDeductionOld +
+    hraExemption +
+    deduction80C +
+    n("t_80d") +
+    npsDeduction +
+    homeLoanDeduction +
+    n("t_otherded");
+
+
+  const oldTaxableIncome =
+    Math.max(0, grossIncome - oldDeductions);
+
+
+  let oldIncomeTax =
+    oldTax(oldTaxableIncome, age);
+
+
+  const oldRebate =
+    oldRegimeRebate(
+      oldTaxableIncome,
+      oldIncomeTax
+    );
+
+
+  oldIncomeTax =
+    Math.max(0, oldIncomeTax - oldRebate);
+
+
+  const oldTaxWithCess =
+    addCess(oldIncomeTax);
+
+
+  /* -------------------------
+     NEW REGIME
+     ------------------------- */
+
+  // AY 2026-27 standard deduction = ₹75,000
+  const standardDeductionNew =
+    Math.min(75000, salary);
+
+
+  const newTaxableIncome =
+    Math.max(
+      0,
+      grossIncome - standardDeductionNew
+    );
+
+
+  let newIncomeTax =
+    newTax(newTaxableIncome);
+
+
+  const newRebate =
+    newRegimeRebate(
+      newTaxableIncome,
+      newIncomeTax
+    );
+
+
+  newIncomeTax =
+    Math.max(0, newIncomeTax - newRebate);
+
+
+  const newTaxWithCess =
+    addCess(newIncomeTax);
+
+
+  /* -------------------------
+     COMPARISON
+     ------------------------- */
+
+  const difference =
+    Math.abs(oldTaxWithCess - newTaxWithCess);
+
+  const best =
+    oldTaxWithCess < newTaxWithCess
+      ? "Old Regime"
+      : newTaxWithCess < oldTaxWithCess
+        ? "New Regime"
+        : "Both Regimes";
+
+
+  $("taxResult").innerHTML = `
+    <div>
+      <b>Old Regime</b><br>
+      Taxable income: ${money(oldTaxableIncome)}<br>
+      Tax + cess: <strong>${money(oldTaxWithCess)}</strong>
+    </div>
+
+    <br>
+
+    <div>
+      <b>New Regime</b><br>
+      Taxable income: ${money(newTaxableIncome)}<br>
+      Tax + cess: <strong>${money(newTaxWithCess)}</strong>
+    </div>
+
+    <hr>
+
+    <div>
+      <b>${best}</b>
+      ${
+        best === "Both Regimes"
+          ? " give approximately the same result."
+          : ` is lower by ${money(difference)} per year.`
+      }
+    </div>
+  `;
 }
 
-function calcSalary(){
-  const v=Math.max(
-    0,
-    n("s_ctc")-
-    n("s_emp")-
-    n("s_ded")-
-    n("s_tax")
-  );
 
-  $("salaryResult").textContent=money(v);
-  $("salaryMonthly").textContent=money(v/12);
+/* =========================================================
+   SALARY CALCULATOR
+   ========================================================= */
+
+function calcSalary() {
+
+  const ctc = n("s_ctc");
+  const employerContribution = n("s_emp");
+  const employeeDeductions = n("s_ded");
+  const incomeTax = n("s_tax");
+
+  const annualTakeHome =
+    Math.max(
+      0,
+      ctc -
+      employerContribution -
+      employeeDeductions -
+      incomeTax
+    );
+
+  $("salaryResult").textContent =
+    money(annualTakeHome);
+
+  $("salaryMonthly").textContent =
+    money(annualTakeHome / 12);
 }
 
-function calcEMI(){
-  const P=n("e_p");
-  const r=n("e_r")/1200;
-  const m=Math.round(n("e_n")*12);
 
-  const e=m?
-    (
-      r?
-      P*r*(1+r)**m/((1+r)**m-1):
-      P/m
-    ):
-    0;
+/* =========================================================
+   EMI CALCULATOR
+   ========================================================= */
 
-  $("emiResult").textContent=money(e);
-  $("emiInterest").textContent=money(e*m-P);
+function calcEMI() {
+
+  const principal = n("e_p");
+  const annualRate = n("e_r");
+  const years = n("e_n");
+
+  const months = Math.round(years * 12);
+
+  if (!months || !principal) {
+
+    $("emiResult").textContent = money(0);
+    $("emiInterest").textContent = money(0);
+
+    return;
+  }
+
+  const monthlyRate =
+    annualRate / 1200;
+
+  let emi;
+
+  if (monthlyRate === 0) {
+
+    emi = principal / months;
+
+  } else {
+
+    emi =
+      principal *
+      monthlyRate *
+      Math.pow(1 + monthlyRate, months) /
+      (Math.pow(1 + monthlyRate, months) - 1);
+  }
+
+  const totalPayment =
+    emi * months;
+
+  const totalInterest =
+    Math.max(0, totalPayment - principal);
+
+  $("emiResult").textContent =
+    money(emi);
+
+  $("emiInterest").textContent =
+    money(totalInterest);
 }
 
-function calcSIP(){
-  const p=n("p_p");
-  const r=n("p_r")/1200;
-  const m=Math.round(n("p_n")*12);
 
-  const v=m?
-    (
-      r?
-      p*((1+r)**m-1)/r*(1+r):
-      p*m
-    ):
-    0;
+/* =========================================================
+   SIP CALCULATOR
+   ========================================================= */
 
-  $("sipResult").textContent=money(v);
-  $("sipInvested").textContent=money(p*m);
+function calcSIP() {
+
+  const monthlyInvestment = n("p_p");
+  const annualReturn = n("p_r");
+  const years = n("p_n");
+
+  const months =
+    Math.round(years * 12);
+
+  if (!months) {
+
+    $("sipResult").textContent =
+      money(0);
+
+    $("sipInvested").textContent =
+      money(0);
+
+    return;
+  }
+
+  const monthlyRate =
+    annualReturn / 1200;
+
+  let futureValue;
+
+  if (monthlyRate === 0) {
+
+    futureValue =
+      monthlyInvestment * months;
+
+  } else {
+
+    futureValue =
+      monthlyInvestment *
+      (
+        (Math.pow(1 + monthlyRate, months) - 1)
+        / monthlyRate
+      ) *
+      (1 + monthlyRate);
+  }
+
+  const invested =
+    monthlyInvestment * months;
+
+  $("sipResult").textContent =
+    money(futureValue);
+
+  $("sipInvested").textContent =
+    money(invested);
 }
 
-function calcCar(){
-  const v=Math.max(
-    0,
-    (n("c_lease")+n("c_run"))*12-n("c_save")
-  );
 
-  $("carResult").textContent=money(v);
+/* =========================================================
+   CAR LEASE CALCULATOR
+   ========================================================= */
+
+function calcCar() {
+
+  const monthlyLease =
+    n("c_lease");
+
+  const monthlyRunningCost =
+    n("c_run");
+
+  const annualTaxSaving =
+    n("c_save");
+
+  const annualCost =
+    (monthlyLease + monthlyRunningCost) * 12;
+
+  const effectiveAnnualCost =
+    Math.max(
+      0,
+      annualCost - annualTaxSaving
+    );
+
+  $("carResult").textContent =
+    money(effectiveAnnualCost);
 }
 
-function calcGold(){
-  const cost=
-    n("g_w")*n("g_buy")+
+
+/* =========================================================
+   GOLD CALCULATOR
+   ========================================================= */
+
+function calcGold() {
+
+  const weight =
+    n("g_w");
+
+  const purchasePrice =
+    n("g_buy");
+
+  const currentPrice =
+    n("g_now");
+
+  const makingCharges =
     n("g_make");
 
-  const value=
-    n("g_w")*n("g_now");
+  const purchaseCost =
+    weight * purchasePrice +
+    makingCharges;
 
-  $("goldResult").textContent=
-    money(value-cost);
+  const currentValue =
+    weight * currentPrice;
+
+  const gain =
+    currentValue - purchaseCost;
+
+  $("goldResult").textContent =
+    money(gain);
 }
 
-$("taxBtn").onclick=calcTax;
 
-$("aiBtn").onclick=()=>{
-  const q=$("aiInput").value.trim();
+/* =========================================================
+   SMARTCALC AI DEMO
+   ========================================================= */
 
-  $("aiResult").textContent=
-    q?
-    "SmartCalc AI: I would identify the right calculator from your question, collect the required inputs, run the deterministic calculation, and explain the result. This demo does not call an external AI service yet."
-    :
-    "Please describe what you want to calculate.";
+$("aiBtn").onclick = () => {
+
+  const question =
+    $("aiInput").value.trim();
+
+  if (!question) {
+
+    $("aiResult").textContent =
+      "Please describe what you want to calculate.";
+
+    return;
+  }
+
+  const q =
+    question.toLowerCase();
+
+  let response;
+
+  if (
+    q.includes("tax") ||
+    q.includes("regime") ||
+    q.includes("80c") ||
+    q.includes("hra")
+  ) {
+
+    response =
+      "This looks like a tax question. Use the Tax Calculator above to compare the Old and New Tax Regimes.";
+
+  } else if (
+    q.includes("emi") ||
+    q.includes("loan")
+  ) {
+
+    response =
+      "This looks like a loan question. Use the EMI Calculator to calculate your monthly payment and total interest.";
+
+  } else if (
+    q.includes("sip") ||
+    q.includes("mutual fund") ||
+    q.includes("investment")
+  ) {
+
+    response =
+      "This looks like an investment question. Use the SIP Calculator to estimate your future value.";
+
+  } else if (
+    q.includes("car") ||
+    q.includes("lease")
+  ) {
+
+    response =
+      "This looks like a car lease question. Use the Car Lease Calculator to estimate your effective annual cost.";
+
+  } else if (
+    q.includes("gold") ||
+    q.includes("jewellery")
+  ) {
+
+    response =
+      "This looks like a gold-value question. Use the Gold Calculator to estimate your gain or loss.";
+
+  } else if (
+    q.includes("salary") ||
+    q.includes("ctc") ||
+    q.includes("take home")
+  ) {
+
+    response =
+      "This looks like a salary question. Use the Salary Calculator to estimate your annual and monthly take-home.";
+
+  } else {
+
+    response =
+      "SmartCalc AI demo: I can help identify whether your question relates to Tax, Salary, EMI, SIP, Car Lease or Gold. Try mentioning the calculation you need.";
+  }
+
+  $("aiResult").textContent =
+    response;
 };
 
-document.querySelectorAll("input,select").forEach(x=>
-  x.addEventListener("input",()=>{
-    calcTax();
-    calcSalary();
-    calcEMI();
-    calcSIP();
-    calcCar();
-    calcGold();
-  })
-);
+
+/* =========================================================
+   LIVE CALCULATION
+   ========================================================= */
+
+document
+  .querySelectorAll("input, select")
+  .forEach(element => {
+
+    element.addEventListener("input", () => {
+
+      calcTax();
+      calcSalary();
+      calcEMI();
+      calcSIP();
+      calcCar();
+      calcGold();
+
+    });
+
+  });
+
+
+/* =========================================================
+   INITIAL CALCULATION
+   ========================================================= */
 
 calcTax();
 calcSalary();
