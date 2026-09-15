@@ -584,6 +584,57 @@ $("aiBtn").onclick = () => {
     response;
 };
 
+/* =========================================================
+   GRATUITY CALCULATOR
+   ========================================================= */
+
+function calcGratuity() {
+
+  const monthlySalary = n("gr_salary");
+  const years = n("gr_years");
+  const months = n("gr_months");
+
+  if (!monthlySalary || !years && !months) {
+
+    $("gratuityResult").textContent = money(0);
+    $("gratuityService").textContent = "0 years";
+
+    return;
+  }
+
+  /*
+     Standard gratuity calculation:
+
+     Gratuity =
+     Last drawn Basic + DA
+     × 15 / 26
+     × completed years of service
+
+     Service of 6 months or more is rounded
+     to the next completed year.
+  */
+
+  let completedYears = Math.floor(years);
+
+  if (months >= 6) {
+    completedYears += 1;
+  }
+
+  const gratuity =
+    monthlySalary *
+    15 /
+    26 *
+    completedYears;
+
+  const finalGratuity =
+    Math.min(2000000, gratuity);
+
+  $("gratuityResult").textContent =
+    money(finalGratuity);
+
+  $("gratuityService").textContent =
+    `${completedYears} year${completedYears === 1 ? "" : "s"}`;
+}
 
 /* =========================================================
    LIVE CALCULATION
@@ -601,6 +652,7 @@ document
       calcSIP();
       calcCar();
       calcGold();
+      calcGratuity();
 
     });
 
