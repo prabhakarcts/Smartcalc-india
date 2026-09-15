@@ -138,7 +138,11 @@
     <button data-tab="gold">
       Gold
     </button>
-
+    
+    <button data-tab="gratuity">
+     Gratuity
+    </button>
+    
   </section>
 
 
@@ -771,6 +775,108 @@
 
   </section>
 
+  <!-- =====================================================
+     GRATUITY CALCULATOR
+     ===================================================== -->
+
+<section id="gratuity" class="app">
+
+  <div class="section-heading">
+
+    <div>
+      <span class="section-kicker">
+        GRATUITY
+      </span>
+
+      <h2>
+        Gratuity Calculator India
+      </h2>
+    </div>
+
+    <span class="badge">
+      New
+    </span>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="fields">
+
+      <label>
+        Monthly Basic + DA
+        <input
+          id="gr_salary"
+          type="number"
+          value="50000"
+          inputmode="numeric"
+        >
+      </label>
+
+
+      <label>
+        Years of service
+        <input
+          id="gr_years"
+          type="number"
+          value="10"
+          inputmode="numeric"
+        >
+      </label>
+
+
+      <label>
+        Months of service
+        <input
+          id="gr_months"
+          type="number"
+          value="0"
+          min="0"
+          max="11"
+          inputmode="numeric"
+        >
+      </label>
+
+    </div>
+
+
+    <button
+      class="calc-button"
+      id="gratuityBtn"
+      type="button"
+      onclick="calcGratuity()"
+    >
+      Calculate gratuity <span>→</span>
+    </button>
+
+
+    <div class="result">
+
+      <span>
+        Estimated gratuity
+      </span>
+
+      <strong id="gratuityResult"></strong>
+
+      <small>
+        Eligible service:
+        <b id="gratuityService"></b>
+      </small>
+
+    </div>
+
+
+    <p class="note">
+      Estimate based on the standard gratuity formula of
+      15 days' wages for each completed year of service.
+      Actual eligibility and calculation may vary based on
+      employment type, applicable law and employer policy.
+    </p>
+
+  </div>
+
+</section>
 
   <!-- =====================================================
        SMARTCALC AI
