@@ -616,7 +616,7 @@ function calcGratuity() {
 
   let completedYears = Math.floor(years);
 
-  if (months >= 6) {
+  if (months > 6) {
     completedYears += 1;
   }
 
